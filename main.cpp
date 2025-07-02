@@ -90,6 +90,7 @@ int main() {
       {"PLAIN", parquet::Encoding::PLAIN, "string", arrow::utf8()},
       {"PLAIN", parquet::Encoding::PLAIN, "float", arrow::float32()},
       {"PLAIN", parquet::Encoding::PLAIN, "int32", arrow::int32()},
+      {"PLAIN", parquet::Encoding::PLAIN, "int64", arrow::int64()},
       {"PLAIN", parquet::Encoding::PLAIN, "binary", arrow::binary()},
 
       // PLAIN_DICTIONARY encoding
