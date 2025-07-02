@@ -43,11 +43,8 @@ void write_parquet(const ColumnSpec& spec,
   if (spec.encoding == parquet::Encoding::PLAIN_DICTIONARY ||
       spec.encoding == parquet::Encoding::RLE_DICTIONARY) {
     builder.enable_dictionary();
-  } else if (spec.encoding == parquet::Encoding::DELTA_BINARY_PACKED ||
-             spec.encoding == parquet::Encoding::DELTA_LENGTH_BYTE_ARRAY) {
-    builder.disable_dictionary()->encoding("data", spec.encoding);
   } else {
-    builder.encoding("data", spec.encoding);
+    builder.disable_dictionary()->encoding("data", spec.encoding);
   }
   auto props = builder.build();
 
@@ -83,6 +80,8 @@ int main() {
         for (int i = 0; i < len; ++i) bytes[i] = rng() % 256;
         return std::string(reinterpret_cast<const char*>(bytes.data()), len);
       }, num_rows);
+  base_data["boolean"] = generate_array<arrow::BooleanBuilder>(
+    [] { return std::uniform_int_distribution<int>(0, 1)(rng) == 1; }, num_rows);
 
   // Specs to write out
   std::vector<ColumnSpec> specs = {
@@ -92,6 +91,7 @@ int main() {
       {"PLAIN", parquet::Encoding::PLAIN, "int32", arrow::int32()},
       {"PLAIN", parquet::Encoding::PLAIN, "int64", arrow::int64()},
       {"PLAIN", parquet::Encoding::PLAIN, "binary", arrow::binary()},
+      {"PLAIN", parquet::Encoding::PLAIN, "boolean", arrow::boolean()},
 
       // PLAIN_DICTIONARY encoding
       {"PLAIN_DICTIONARY", parquet::Encoding::PLAIN_DICTIONARY, "string", arrow::utf8()},
@@ -106,12 +106,7 @@ int main() {
       {"RLE_DICTIONARY", parquet::Encoding::RLE_DICTIONARY, "int64", arrow::int64()},
       {"RLE_DICTIONARY", parquet::Encoding::RLE_DICTIONARY, "binary", arrow::binary()},
 
-      {"RLE", parquet::Encoding::RLE, "string", arrow::utf8()},
-      {"RLE", parquet::Encoding::RLE, "float", arrow::float32()},
-      {"RLE", parquet::Encoding::RLE, "int32", arrow::int32()},
-      {"RLE", parquet::Encoding::RLE, "int64", arrow::int64()},
-      {"RLE", parquet::Encoding::RLE, "binary", arrow::binary()},
-
+      {"RLE", parquet::Encoding::RLE, "boolean", arrow::boolean()},
 
       // DELTA_BINARY_PACKED encoding (int types only)
       {"DELTA_BINARY_PACKED", parquet::Encoding::DELTA_BINARY_PACKED, "int32", arrow::int32()},
